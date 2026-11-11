@@ -46,5 +46,5 @@ export function validateReadingInput({ reading_date, slot, value }) {
         return 'Please select a valid time slot.';
     }
 
-    return null; // null means valid!
+    return null; 
   }
