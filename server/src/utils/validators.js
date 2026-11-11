@@ -46,5 +46,42 @@ export function validateReadingInput({ reading_date, slot, value }) {
         return 'Please select a valid time slot.';
     }
 
-    return null; 
-  }
+    return null;
+}
+
+export function getReportDateRanges(selectedDate) {
+    const [year, month] = selectedDate.split('-').map(Number);
+
+    // 1. Daily: just the selected date
+    const dailyRange = {
+        startDate: selectedDate,
+        endDate: selectedDate,
+    };
+
+    // 2. Month-to-date: 1st of selected month -> selectedDate
+    const mtdStart = `${year}-${String(month).padStart(2, '0')}-01`;
+    const monthToDateRange = {
+        startDate: mtdStart,
+        endDate: selectedDate,
+    };
+
+    // 3. Previous month: 1st of previous month -> last day of previous month
+    const prevMonthYear = month === 1 ? year - 1 : year;
+    const prevMonth = month === 1 ? 12 : month - 1;
+    // month - 1 is the 0-indexed current month, so day 0 gives last day of previous month
+    const lastDayOfPrevMonth = new Date(year, month - 1, 0).getDate();
+
+    const prevStart = `${prevMonthYear}-${String(prevMonth).padStart(2, '0')}-01`;
+    const prevEnd = `${prevMonthYear}-${String(prevMonth).padStart(2, '0')}-${String(lastDayOfPrevMonth).padStart(2, '0')}`;
+
+    const previousMonthRange = {
+        startDate: prevStart,
+        endDate: prevEnd,
+    };
+
+    return {
+        daily: dailyRange,
+        monthToDate: monthToDateRange,
+        previousMonth: previousMonthRange,
+    };
+}
