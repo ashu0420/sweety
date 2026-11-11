@@ -3,6 +3,7 @@ import cors from 'cors';
 import pool from './config/db.js';
 import authRoutes from './routes/auth.routes.js';
 import readingsRoutes from './routes/readings.routes.js';
+import reportsRoutes from './routes/reports.routes.js';
 
 const app = express();
 
@@ -18,10 +19,16 @@ app.get('/api/health', async (req, res) => {
     }
 });
 
+// Auth routes
 app.use('/api/auth', authRoutes);
 app.use('/auth', authRoutes);
 
+// Readings routes
 app.use('/api/readings', readingsRoutes);
 app.use('/readings', readingsRoutes);
+
+// Reports routes
+app.use('/api/reports', reportsRoutes);
+app.use('/reports', reportsRoutes);
 
 export default app;
