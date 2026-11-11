@@ -1,5 +1,17 @@
+# Dependencies
 node_modules/
+server/node_modules/
+client/node_modules/
+
+# Environment variables (keep .env.example tracked!)
 .env
+.env.*
+!.env.example
+!server/.env.example
+!client/.env.example
+
+# Build outputs & logs
 dist/
-coverage/
-.DS_Storem
+build/
+npm-debug.log*
+.DS_Store
