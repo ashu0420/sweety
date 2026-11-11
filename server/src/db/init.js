@@ -3,7 +3,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import pool from '../config/db.js';
 
-// In ES Modules ("type": "module"), __dirname is not global, so we derive it from import.meta.url
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 

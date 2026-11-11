@@ -11,7 +11,6 @@ export const authenticateToken = (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        // Attach the logged-in user's info to req.user for downstream controllers
         req.user = { id: decoded.userId, email: decoded.email, name: decoded.name };
         next();
     } catch (error) {
