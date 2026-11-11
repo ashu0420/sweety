@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import pool from './config/db.js';
 import authRoutes from './routes/auth.routes.js';
+import readingsRoutes from './routes/readings.routes.js';
 
 const app = express();
 
@@ -17,7 +18,10 @@ app.get('/api/health', async (req, res) => {
     }
 });
 
-// Mount Auth routes
 app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes);
+
+app.use('/api/readings', readingsRoutes);
+app.use('/readings', readingsRoutes);
 
 export default app;
