@@ -48,7 +48,7 @@ export default function Dashboard() {
     // Reports state
     const [reportDate, setReportDate] = useState(today);
     const [reports, setReports] = useState(null);
-    const [loadingReports, setLoadingReports] = useState(false);
+    const [loadingReports, setLoadingReports] = useState(true);
 
     const handleLogout = useCallback(() => {
         localStorage.removeItem('sweety_token');
@@ -56,35 +56,68 @@ export default function Dashboard() {
         navigate('/login');
     }, [navigate]);
 
-    const fetchReadings = useCallback(async (targetPage = page) => {
-        try {
-            const res = await api.get(`/readings?page=${targetPage}&limit=10`);
-            setReadings(res.data.readings);
-            setPagination(res.data.pagination);
-        } catch (err) {
-            if (err.response?.status === 401) handleLogout();
-        }
+    const fetchReadings = useCallback(
+        async (targetPage = page) => {
+            try {
+                const res = await api.get(`/readings?page=${targetPage}&limit=10`);
+                setReadings(res.data.readings);
+                setPagination(res.data.pagination);
+            } catch (err) {
+                if (err.response?.status === 401) handleLogout();
+            }
+        },
+        [page, handleLogout]
+    );
+
+    const fetchReports = useCallback(
+        async (targetDate = reportDate) => {
+            try {
+                const res = await api.get(`/reports?date=${targetDate}`);
+                setReports(res.data);
+            } catch (err) {
+                if (err.response?.status === 401) handleLogout();
+            } finally {
+                setLoadingReports(false);
+            }
+        },
+        [reportDate, handleLogout]
+    );
+
+    useEffect(() => {
+        let ignore = false;
+        api
+            .get(`/readings?page=${page}&limit=10`)
+            .then((res) => {
+                if (!ignore) {
+                    setReadings(res.data.readings);
+                    setPagination(res.data.pagination);
+                }
+            })
+            .catch((err) => {
+                if (!ignore && err.response?.status === 401) handleLogout();
+            });
+        return () => {
+            ignore = true;
+        };
     }, [page, handleLogout]);
 
-    const fetchReports = useCallback(async (targetDate = reportDate) => {
-        setLoadingReports(true);
-        try {
-            const res = await api.get(`/reports?date=${targetDate}`);
-            setReports(res.data);
-        } catch (err) {
-            if (err.response?.status === 401) handleLogout();
-        } finally {
-            setLoadingReports(false);
-        }
+    useEffect(() => {
+        let ignore = false;
+        api
+            .get(`/reports?date=${reportDate}`)
+            .then((res) => {
+                if (!ignore) setReports(res.data);
+            })
+            .catch((err) => {
+                if (!ignore && err.response?.status === 401) handleLogout();
+            })
+            .finally(() => {
+                if (!ignore) setLoadingReports(false);
+            });
+        return () => {
+            ignore = true;
+        };
     }, [reportDate, handleLogout]);
-
-    useEffect(() => {
-        fetchReadings(page);
-    }, [page, fetchReadings]);
-
-    useEffect(() => {
-        fetchReports(reportDate);
-    }, [reportDate, fetchReports]);
 
     const resetForm = () => {
         setEditingId(null);
@@ -289,7 +322,10 @@ export default function Dashboard() {
                             <input
                                 type="date"
                                 value={reportDate}
-                                onChange={(e) => setReportDate(e.target.value)}
+                                onChange={(e) => {
+                                    setLoadingReports(true);
+                                    setReportDate(e.target.value);
+                                }}
                                 className="px-3 py-1.5 border border-slate-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                         </div>
