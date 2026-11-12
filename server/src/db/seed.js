@@ -16,7 +16,7 @@ function formatLocalDate(dateObj) {
 
 async function seed() {
     try {
-        // 1. Ensure tables exist first
+        // 1. Ensure tables exist
         const schemaPath = path.join(__dirname, 'schema.sql');
         const schemaSql = fs.readFileSync(schemaPath, 'utf8');
         await query(schemaSql);
@@ -36,58 +36,76 @@ async function seed() {
         );
         const userId = userRes.rows[0].id;
 
-        // 3. Build dynamic dates relative to today so Daily, MTD, and Previous Month all have data
         const now = new Date();
         const todayStr = formatLocalDate(now);
-
-        const mtdDay1 = formatLocalDate(new Date(now.getFullYear(), now.getMonth(), 1));
-        const mtdDay2 = formatLocalDate(
-            new Date(now.getFullYear(), now.getMonth(), Math.max(1, now.getDate() - 1))
-        );
-
-        const prevMonth1 = formatLocalDate(
-            new Date(now.getFullYear(), now.getMonth() - 1, 5)
-        );
-        const prevMonth2 = formatLocalDate(
-            new Date(now.getFullYear(), now.getMonth() - 1, 15)
-        );
-        const prevMonth3 = formatLocalDate(
-            new Date(now.getFullYear(), now.getMonth() - 1, 24)
-        );
+        const slots = [
+            'Morning (fasting)',
+            'After breakfast',
+            'After lunch',
+            'After dinner',
+        ];
 
         const sampleReadings = [
-            // Today's readings (3 slots filled, leaving 'After dinner' open for live testing!)
+            // Today: 3 slots filled (leaves 'After dinner' free for live testing)
             { date: todayStr, slot: 'Morning (fasting)', value: 96 },
             { date: todayStr, slot: 'After breakfast', value: 134 },
             { date: todayStr, slot: 'After lunch', value: 142 },
-
-            // Earlier this month (Month-to-date)
-            { date: mtdDay1, slot: 'Morning (fasting)', value: 92 },
-            { date: mtdDay1, slot: 'After breakfast', value: 128 },
-            { date: mtdDay1, slot: 'After lunch', value: 148 },
-            { date: mtdDay1, slot: 'After dinner', value: 118 },
-            { date: mtdDay2, slot: 'Morning (fasting)', value: 98 },
-            { date: mtdDay2, slot: 'After dinner', value: 126 },
-
-            // Previous month (Monthly report)
-            { date: prevMonth1, slot: 'Morning (fasting)', value: 88 },
-            { date: prevMonth1, slot: 'After lunch', value: 155 },
-            { date: prevMonth2, slot: 'Morning (fasting)', value: 94 },
-            { date: prevMonth2, slot: 'After breakfast', value: 138 },
-            { date: prevMonth2, slot: 'After dinner', value: 130 },
-            { date: prevMonth3, slot: 'After lunch', value: 162 },
         ];
 
+        // Earlier this month (Month-to-date): 3 previous days * 4 slots = 12 readings
+        const mtdValues = [
+            [92, 128, 148, 118],
+            [98, 131, 152, 124],
+            [90, 122, 139, 115],
+        ];
+        for (let i = 0; i < mtdValues.length; i++) {
+            const dayNum = Math.max(1, now.getDate() - (i + 1));
+            const dStr = formatLocalDate(
+                new Date(now.getFullYear(), now.getMonth(), dayNum)
+            );
+            slots.forEach((slot, sIdx) => {
+                sampleReadings.push({
+                    date: dStr,
+                    slot,
+                    value: mtdValues[i][sIdx],
+                });
+            });
+        }
+
+        // Previous month (Monthly report): 5 days * 4 slots = 20 readings
+        const prevMonthDays = [3, 8, 14, 20, 26];
+        const prevMonthValues = [
+            [88, 130, 155, 120],
+            [94, 138, 160, 128],
+            [91, 125, 144, 119],
+            [99, 142, 168, 133],
+            [86, 127, 149, 121],
+        ];
+        prevMonthDays.forEach((day, dIdx) => {
+            const dStr = formatLocalDate(
+                new Date(now.getFullYear(), now.getMonth() - 1, day)
+            );
+            slots.forEach((slot, sIdx) => {
+                sampleReadings.push({
+                    date: dStr,
+                    slot,
+                    value: prevMonthValues[dIdx][sIdx],
+                });
+            });
+        });
+
+        let insertedCount = 0;
         for (const r of sampleReadings) {
-            await query(
+            const res = await query(
                 `INSERT INTO readings (user_id, reading_date, slot, value)
          VALUES ($1, $2, $3, $4)
          ON CONFLICT (user_id, reading_date, slot) DO NOTHING`,
                 [userId, r.date, r.slot, r.value]
             );
+            insertedCount += res.rowCount;
         }
 
-        console.log('✅ Seed complete!');
+        console.log(`✅ Seed complete! Inserted ${insertedCount} sample readings.`);
         console.log('   Demo Email:    demo@sweety.com');
         console.log('   Demo Password: password123');
     } catch (error) {
