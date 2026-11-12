@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 import pool, { query } from '../config/db.js';
 
 const __filename = fileURLToPath(import.meta.url);
