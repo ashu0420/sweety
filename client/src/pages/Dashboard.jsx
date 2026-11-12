@@ -41,7 +41,7 @@ export default function Dashboard() {
     const [pagination, setPagination] = useState({
         total: 0,
         page: 1,
-        limit: 10,
+        limit: 20,
         totalPages: 1,
     });
 
@@ -59,7 +59,7 @@ export default function Dashboard() {
     const fetchReadings = useCallback(
         async (targetPage = page) => {
             try {
-                const res = await api.get(`/readings?page=${targetPage}&limit=10`);
+                const res = await api.get(`/readings?page=${targetPage}&limit=20`);
                 setReadings(res.data.readings);
                 setPagination(res.data.pagination);
             } catch (err) {
@@ -86,7 +86,7 @@ export default function Dashboard() {
     useEffect(() => {
         let ignore = false;
         api
-            .get(`/readings?page=${page}&limit=10`)
+            .get(`/readings?page=${page}&limit=20`)
             .then((res) => {
                 if (!ignore) {
                     setReadings(res.data.readings);
