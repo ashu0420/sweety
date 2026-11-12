@@ -91,6 +91,16 @@ Open `http://localhost:5173` in your browser.
 4. **Daily Cap:** Maximum of 4 readings per day (`"You can add only 4 readings per day."`).
 5. **No Future Dates:** Rejects dates after today (`"Date cannot be in the future."`).
 
+## Screenshots & Demo
+- **Screen Recording:** [Watch Demo.mp4](./screenshots/Demo.mp4)
+
+### Dashboard & Multi-Range Reports
+![Dashboard](./screenshots/Dashboard.png)
+
+### Validation & Pagination (`?page=1&limit=20`)
+![Pagination & Duplicate Slot Validation](./screenshots/Pages.png)
+![Out of Range Validation](./screenshots/Out_of_range.png)
+
 ## Notes
 
 ### Assumptions Made
